@@ -162,8 +162,8 @@ def gn(t, x, r):
 
 
 # actions dicretization(hp, cp, kp)
-numGrid = 20
-As = np.array(np.meshgrid(np.linspace(0.001,0.999,numGrid),np.linspace(0.001,0.999,numGrid), np.linspace(0,1,numGrid))).T.reshape(-1,3)
+numGrid = 80
+As = np.array(np.meshgrid(np.linspace(0.001,0.999,numGrid), np.linspace(0,1,numGrid))).T.reshape(-1,2)
 As = jnp.array(As)
 # wealth discretization 
 # ws = np.array([10,25,50,75,100,125,150,175,200,250,500,750,1000,1500,3000])
