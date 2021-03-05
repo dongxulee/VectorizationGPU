@@ -67,7 +67,7 @@ Nt = jnp.array(Nt)
 Dt = [np.ceil(((1+r_bar)**N - 1)/(r_bar*(1+r_bar)**N)) for N in Nt]
 Dt = jnp.array(Dt)
 # income fraction goes into 401k 
-yi = 0.001
+yi = 0.002
 
 # variable associated with housing and mortgage 
 # mortgage rate 
