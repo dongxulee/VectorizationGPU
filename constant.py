@@ -167,7 +167,7 @@ As = np.array(np.meshgrid(np.linspace(0.001,0.999,numGrid), np.linspace(0,1,numG
 As = jnp.array(As)
 # wealth discretization 
 # ws = np.array([10,25,50,75,100,125,150,175,200,250,500,750,1000,1500,3000])
-ws = np.linspace(0, 999, 100)
+ws = np.linspace(0, 99, 100)
 w_grid_size = len(ws)
 pointsRent = ws
 # dimentions of the state
