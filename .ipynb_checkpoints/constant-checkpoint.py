@@ -31,8 +31,6 @@ tau_L = 0.2
 tau_R = 0.1
 # number of states S
 nS = 27
-# number of states e
-nE = 2
 
 
 # probability of survival
@@ -69,7 +67,7 @@ Nt = jnp.array(Nt)
 Dt = [np.ceil(((1+r_bar)**N - 1)/(r_bar*(1+r_bar)**N)) for N in Nt]
 Dt = jnp.array(Dt)
 # income fraction goes into 401k 
-yi = 0.001
+yi = 0.015
 
 # variable associated with housing and mortgage 
 # mortgage rate 
@@ -87,31 +85,96 @@ pr = 2*10/1000
 # stock participation maintenance fee
 Km = 0.5
 # stock participation cost 
-Kc = 5 
+Kc = 5
+
+#Sharing functions
+#Define the earning function, which applies for both employment and unemployment, 27 states
+def y(t, x):
+    # owning part 
+    if len(x) == 6:
+        w, n, M, e, s, z = x
+    # renting part 
+    elif len(x) == 5:
+        w, n, e, s, z = x
+    # start owning part 
+    elif len(x) == 7:
+        w, n, M, e, s, z, H = x
+    else:
+        sys.exit('The dimenstion of the state is in the wrong format.')
+        
+    if t <= T_R:
+        return detEarning[t] * (1+gGDP[int(s)]) * e + (1-e) * welfare
+    else:
+        return detEarning[t]
+    
+#Earning after tax and fixed by transaction in and out from 401k account 
+def yAT(t,x):
+    # owning part 
+    if len(x) == 6:
+        w, n, M, e, s, z = x
+    # renting part 
+    elif len(x) == 5:
+        w, n, e, s, z = x
+    # start owning part 
+    elif len(x) == 7:
+        w, n, M, e, s, z, H = x
+    else:
+        sys.exit('The dimenstion of the state is in the wrong format.')
+    yt = y(t, x)
+    
+    if t <= T_R and e == 1:
+        # yi portion of the income will be put into the 401k 
+        return (1-tau_L)*(yt * (1-yi))
+    if t <= T_R and e == 0:
+        # unemployment
+        return yt
+    else:
+        # t > T_R, n/discounting amount will be withdraw from the 401k 
+        return (1-tau_R)*yt + n/Dt[t]
+
+#Define the evolution of the amount in 401k account 
+def gn(t, x, r):
+    # owning part 
+    if len(x) == 6:
+        w, n, M, e, s, z = x
+    # renting part 
+    elif len(x) == 5:
+        w, n, e, s, z = x
+    # start owning part 
+    elif len(x) == 7:
+        w, n, M, e, s, z, H = x
+    else:
+        sys.exit('The dimenstion of the state is in the wrong format.')
+        
+    if t <= T_R and e == 1:
+        # if the person is employed, then yi portion of his income goes into 401k 
+        n_cur = n + y(t, x) * yi
+    elif t <= T_R and e == 0:
+        # if the perons is unemployed, then n does not change 
+        n_cur = n
+    else:
+        # t > T_R, n/discounting amount will be withdraw from the 401k 
+        n_cur = n - n/Dt[t]
+        # the 401 grow as the same rate as the stock 
+    return (1+r)*n_cur 
 
 
 
 
 # actions dicretization(hp, cp, kp)
-numGrid = 20
+numGrid = 80
 As = np.array(np.meshgrid(np.linspace(0.001,0.999,numGrid), np.linspace(0,1,numGrid))).T.reshape(-1,2)
 As = jnp.array(As)
 # wealth discretization 
 # ws = np.array([10,25,50,75,100,125,150,175,200,250,500,750,1000,1500,3000])
-ws = np.linspace(0, 300, 10)
-ns = np.linspace(0, 300, 10)
-scale = 300/10
+ws = np.linspace(0, 99, 100)
 w_grid_size = len(ws)
-n_grid_size = len(ns)
-
+pointsRent = ws
 # dimentions of the state
-dim = (w_grid_size, n_grid_size, nS, nE)
+dim = (w_grid_size, nS)
 dimSize = len(dim)
 
-xgrid = np.array([[w,n,s,e] for w in ws 
-                            for s in range(nS)
-                            for n in ns
-                            for e in range(nE)]).reshape(dim + (dimSize,))
+xgrid = np.array([[w, s] for w in ws for s in range(nS)]).reshape(dim + (dimSize,))
 
 Xs = xgrid.reshape((np.prod(dim),dimSize))
 Xs = jnp.array(Xs)
