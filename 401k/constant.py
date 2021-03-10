@@ -69,7 +69,7 @@ Nt = jnp.array(Nt)
 Dt = [np.ceil(((1+r_bar)**N - 1)/(r_bar*(1+r_bar)**N)) for N in Nt]
 Dt = jnp.array(Dt)
 # income fraction goes into 401k 
-yi = 0.001
+yi = 0.01
 
 # variable associated with housing and mortgage 
 # mortgage rate 
@@ -98,9 +98,10 @@ As = np.array(np.meshgrid(np.linspace(0.001,0.999,numGrid), np.linspace(0,1,numG
 As = jnp.array(As)
 # wealth discretization 
 # ws = np.array([10,25,50,75,100,125,150,175,200,250,500,750,1000,1500,3000])
-ws = np.linspace(0, 300, 10)
-ns = np.linspace(0, 300, 10)
-scale = 300/10
+ws = np.linspace(0, 600, 10)
+ns = np.linspace(0, 600, 10)
+scaleW = ws.max()/ws.size
+scaleN = ns.max()/ns.size
 w_grid_size = len(ws)
 n_grid_size = len(ns)
 
@@ -108,9 +109,9 @@ n_grid_size = len(ns)
 dim = (w_grid_size, n_grid_size, nS, nE)
 dimSize = len(dim)
 
-xgrid = np.array([[w,n,s,e] for w in ws 
-                            for s in range(nS)
+xgrid = np.array([[w,n,s,e] for w in ws
                             for n in ns
+                            for s in range(nS)
                             for e in range(nE)]).reshape(dim + (dimSize,))
 
 Xs = xgrid.reshape((np.prod(dim),dimSize))
